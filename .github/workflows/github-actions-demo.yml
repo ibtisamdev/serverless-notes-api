@@ -1,4 +1,4 @@
- name: Deploy notes API
+name: Deploy notes API
 
 on:
   push:
@@ -9,6 +9,9 @@ jobs:
   productionDeployment:
     name: production-deployment
     runs-on: ubuntu-latest
+    environment:
+      name: Production
+      url: https://localhost:3000
     strategy:
       matrix:
         node-version: [16.x]
@@ -19,10 +22,11 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - run: npm ci
-    - name: serverless deploy
+    - name: Install Plugin and Deploy
       uses: serverless/github-action@v3.2
       with:
-        args: deploy
+        args: -c "serverless plugin install --name serverless-iam-roles-per-function && serverless deploy --stage production"
+        entrypoint: /bin/sh
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
